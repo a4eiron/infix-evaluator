@@ -3,6 +3,10 @@ use crate::lexer::Token;
 #[derive(Debug)]
 pub enum Expr {
     Number(f64),
+    Unary {
+        op: Token,
+        expr: Box<Expr>,
+    },
     Binary {
         op: Token,
         left: Box<Expr>,
@@ -49,6 +53,14 @@ impl Parser {
 
         let mut left = match token {
             Token::Number(n) => Expr::Number(n),
+            Token::Minus => {
+                let right = self.parse(3)?;
+                Expr::Unary {
+                    op: Token::Minus,
+                    expr: Box::new(right),
+                }
+            }
+            Token::Plus => self.parse(3)?,
             Token::LParen => {
                 let inner_expr = self.parse(0)?;
                 match self.next_token() {
